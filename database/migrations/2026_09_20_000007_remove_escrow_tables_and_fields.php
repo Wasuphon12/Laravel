@@ -19,7 +19,7 @@ return new class extends Migration
                     $table->dropColumn($column);
                 }
             }
-        });
+        }); 
     }
 
     public function down(): void

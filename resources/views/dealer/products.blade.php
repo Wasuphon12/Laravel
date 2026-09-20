@@ -1,0 +1,10 @@
+<x-app-layout>
+    <x-slot name="header"><div class="page-shell flex flex-wrap items-center justify-between gap-4"><div><p class="eyebrow">รายการสินค้าร้านค้า</p><h1 class="mt-1 font-bold text-2xl text-slate-900">สินค้าของร้าน</h1></div><a href="{{ route('dealer.products.create') }}" class="btn-primary">+ เพิ่มสินค้า</a></div></x-slot>
+    <div class="page-shell py-8">
+        <form method="GET" action="{{ route('dealer.products') }}" class="dealer-product-search">
+            <div class="min-w-0 flex-1"><label for="dealer_product_search" class="mb-2 block text-sm font-bold text-slate-900">ค้นหาสินค้าในร้าน</label><input id="dealer_product_search" name="search" value="{{ $search }}" type="search" enterkeyhint="search" placeholder="ชื่อสินค้า หรือ Serial Number" class="min-h-12 w-full rounded-xl" aria-describedby="dealer_product_search_help"><p id="dealer_product_search_help" class="mt-2 text-xs text-slate-400">ค้นหาได้จากชื่อสินค้าและ Serial Number</p></div><button class="btn-primary min-w-28" type="submit">ค้นหา</button>@if($search)<a href="{{ route('dealer.products') }}" class="btn-secondary min-w-24">ล้าง</a>@endif
+        </form>
+        <p class="mt-5 text-sm text-slate-400">พบสินค้า {{ $products->count() }} รายการ@if($search) สำหรับ “{{ $search }}”@endif</p>
+        <div class="mt-4 overflow-x-auto rounded-xl bg-white shadow"><table class="w-full text-left"><thead class="bg-gray-50 text-sm"><tr><th class="p-4">สินค้า</th><th>ราคา</th><th>สถานะ</th><th></th></tr></thead><tbody>@forelse($products as $product)<tr class="border-t"><td class="p-4"><b>{{ $product->name }}</b><br><small>{{ $product->serial_number }}</small></td><td>฿{{ number_format($product->price,2) }}</td><td>{{ $product->status }}</td><td><a class="text-indigo-600" href="{{ route('dealer.products.edit',$product) }}">แก้ไข</a></td></tr>@empty<tr><td class="p-5 text-gray-500" colspan="4">ไม่พบสินค้าที่ค้นหา</td></tr>@endforelse</tbody></table></div>
+    </div>
+</x-app-layout>

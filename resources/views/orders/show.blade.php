@@ -1,0 +1,74 @@
+<x-app-layout>
+    <x-slot name="header"><h1 class="font-bold text-2xl">คำสั่งซื้อ #{{ $order->id }}</h1></x-slot>
+
+    @php
+        $isDirectPayment = $order->payment_method === 'promptpay_direct';
+        $isDemoExpired = $isDemoGateway && $order->payment_expires_at?->isPast();
+    @endphp
+    <div class="max-w-4xl mx-auto space-y-5 p-6">
+        <section class="card p-6">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+                <div><p class="text-sm text-slate-500">ยอดชำระทั้งหมด</p><p class="mt-1 text-3xl font-bold text-slate-900">฿{{ number_format($order->total_amount, 2) }}</p></div>
+                <span class="rounded-full px-3 py-1 text-sm font-bold {{ $order->payment_status === 'paid' ? 'bg-emerald-100 text-emerald-700' : ($order->payment_status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700') }}">{{ $order->payment_status === 'paid' ? 'ชำระเงินยืนยันแล้ว' : ($order->payment_status === 'failed' ? 'QR หมดอายุ' : 'รอชำระเงิน') }}</span>
+            </div>
+
+            @if($isDemoGateway)
+                <div class="mt-4 rounded-xl border border-amber-400/35 bg-amber-400/10 p-4 text-sm text-slate-100"><b>โหมดสาธิตระบบรับชำระเงิน</b> — QR นี้ใช้จำลองการจ่ายเงินเท่านั้น ไม่มีการโอนเงินจริงและไม่ต้องแนบสลิป</div>
+            @elseif($isDirectPayment)
+                <div class="mt-4 rounded-xl border border-red-500/35 bg-red-500/10 p-4 text-sm text-slate-200">ชำระเงินรูปแบบ <b>โอนตรงเข้าร้านค้า</b> — ร้าน {{ $dealer?->dealerProfile?->store_name ?? $dealer?->name }} จะเป็นผู้ตรวจสอบสลิปและยืนยันยอดด้วยตนเอง</div>
+            @endif
+
+            @if($order->payment_status === 'pending')
+                <div class="mt-6 grid gap-6 rounded-2xl border border-[#B2B0E8] bg-[#f4f4fc] p-5 sm:grid-cols-[190px_1fr]">
+                    <div class="rounded-xl bg-white p-3 text-center shadow-sm"><img class="mx-auto h-40 w-40" src="https://api.qrserver.com/v1/create-qr-code/?size=320x320&amp;data={{ urlencode($qrData) }}" alt="{{ $isDemoGateway ? 'คิวอาร์โค้ดสำหรับสาธิตการชำระเงิน' : 'คิวอาร์โค้ดชำระเงิน' }}"><p class="mt-2 text-xs text-slate-500">{{ $isDemoGateway ? 'คิวอาร์โค้ดแบบสาธิต' : ($isDirectPayment ? 'พร้อมเพย์ของร้านค้า' : 'อ้างอิง SPC-'.$order->id) }}</p></div>
+                    <div>
+                        @if($isDemoGateway)
+                            <h2 class="text-lg font-bold text-slate-900">สแกนคิวอาร์โค้ดเพื่อสาธิต</h2>
+                            <p class="mt-1 text-sm leading-6 text-slate-600">คิวอาร์โค้ดนี้มีรหัสเฉพาะสำหรับคำสั่งซื้อ #{{ $order->id }} และใช้แสดงขั้นตอนของระบบรับชำระเงินเท่านั้น</p>
+                            <p class="mt-3 text-sm font-semibold {{ $isDemoExpired ? 'text-red-700' : 'text-amber-700' }}">{{ $isDemoExpired ? '⌁ QR หมดอายุแล้ว' : '◷ ใช้งานได้ถึง '.$order->payment_expires_at?->format('d/m/Y H:i') }}</p>
+                            @if(! $isDemoExpired)
+                                <form method="POST" action="{{ route('orders.demo-gateway.callback', $order) }}" class="mt-5">@csrf<button type="submit" class="btn-primary">จำลองการแจ้งยืนยันการชำระเงิน</button></form>
+                            @endif
+                        @else
+                            <h2 class="text-lg font-bold text-slate-900">สแกน QR เพื่อชำระเงิน</h2>
+                            <p class="mt-1 text-sm leading-6 text-slate-600">ชำระยอด <b>฿{{ number_format($order->total_amount, 2) }}</b> @if($isDirectPayment)เข้าร้าน <b>{{ $dealer?->dealerProfile?->store_name ?? $dealer?->name }}</b> โดยตรง @endif แล้วแนบสลิปเพื่อส่งให้ร้านค้าตรวจสอบ</p>
+                        @endif
+                    </div>
+                </div>
+
+                @if(! $isDemoGateway)
+                    <form method="POST" action="{{ route('orders.payment-slip', $order) }}" enctype="multipart/form-data" class="mt-5 rounded-2xl border border-dashed border-[#7A85C1] p-5">@csrf
+                        <h2 class="font-bold text-slate-900">แนบสลิปการโอนเงิน</h2>
+                        <div class="mt-3 flex flex-wrap gap-3"><input required type="file" name="payment_slip" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm text-slate-600"><button class="btn-primary">ส่งสลิป</button></div>
+                        @error('payment_slip')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </form>
+                @endif
+                @if($order->slip_status === 'not_submitted' && ! $order->payment_slip_path)
+                    <form method="POST" action="{{ route('orders.cancel', $order) }}" class="mt-4 text-right" onsubmit="return confirm('ยกเลิกคำสั่งซื้อนี้ใช่หรือไม่? สินค้าจะกลับไปพร้อมขายทันที')">@csrf @method('DELETE')<button class="text-sm font-bold text-red-400 hover:text-red-300">ยกเลิกคำสั่งซื้อ</button></form>
+                @endif
+            @else
+                <p class="mt-5 text-sm font-medium {{ $order->payment_status === 'paid' ? 'text-emerald-700' : 'text-red-700' }}">{{ $order->payment_status === 'paid' ? '✓ ระบบยืนยันการชำระเงินแล้ว รายการสามารถจัดส่งได้' : 'คิวอาร์โค้ดหมดอายุ โปรดสร้างคำสั่งซื้อใหม่เพื่อทดลองอีกครั้ง' }}</p>
+            @endif
+
+            @if($order->payment_slip_path)
+                <div class="mt-5"><p class="mb-2 text-sm font-bold text-slate-900">สลิปที่ส่ง</p><a href="{{ asset('storage/'.$order->payment_slip_path) }}" target="_blank"><img src="{{ asset('storage/'.$order->payment_slip_path) }}" class="max-h-72 rounded-xl border border-slate-200" alt="สลิปการชำระเงิน"></a></div>
+            @endif
+        </section>
+
+        <x-order-timeline :order="$order" />
+
+        @foreach($order->items as $item)
+            <section class="card p-6"><div class="flex justify-between gap-4"><h2 class="font-bold text-slate-900">{{ $item->product->name }}</h2><b class="text-slate-900">฿{{ number_format($item->price,2) }}</b></div><p class="mt-2 text-sm text-slate-600">ร้าน: {{ $item->dealer->dealerProfile?->store_name ?? $item->dealer->name }}</p><p class="text-sm text-slate-600">จัดส่ง: {{ $item->delivery_status }} · {{ $isDemoGateway ? 'ระบบรับชำระเงิน (สาธิต)' : 'ชำระตรงเข้าร้านค้า' }}</p>@if($order->payment_status === 'paid' && $item->delivery_status === 'shipped')<form method="POST" action="{{ route('orders.confirm-delivery',$order) }}" class="mt-3">@csrf<button class="rounded bg-emerald-600 px-3 py-2 text-white">ยืนยันรับสินค้า</button></form>@endif @if(! $item->dispute)<form method="POST" action="{{ route('disputes.store',$item) }}" class="mt-3">@csrf<textarea name="reason" required placeholder="ปัญหาที่พบ" class="w-full rounded border-gray-300"></textarea><button class="mt-2 text-sm text-red-700">เปิดข้อพิพาท</button></form>@endif
+                @if($item->delivery_status === 'delivered')
+                    @if($item->dealerReview)
+                        <p class="mt-4 text-sm font-semibold text-amber-700">★ คุณให้คะแนนร้านนี้ {{ $item->dealerReview->rating }}/5 แล้ว</p>
+                    @else
+                        <form method="POST" action="{{ route('dealer-reviews.store', $item) }}" class="mt-4 rounded-xl border border-gray-700 bg-slate-50 p-4">@csrf
+                            <p class="font-bold text-slate-900">ให้คะแนนร้านค้า</p><div class="mt-3 grid gap-3 sm:grid-cols-[150px_1fr_auto]"><select required name="rating" class="rounded-xl"><option value="">เลือกคะแนน</option>@for($rating = 5; $rating >= 1; $rating--)<option value="{{ $rating }}">{{ $rating }} ดาว</option>@endfor</select><input name="comment" maxlength="500" placeholder="ความคิดเห็นเพิ่มเติม (ไม่บังคับ)" class="rounded-xl"><button class="btn-primary">ส่งคะแนน</button></div>
+                        </form>
+                    @endif
+                @endif
+            </section>
+        @endforeach
+    </div>
+</x-app-layout>

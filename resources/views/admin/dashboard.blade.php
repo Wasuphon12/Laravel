@@ -9,4 +9,6 @@
             <article class="admin-panel"><div class="admin-panel-heading"><div><p class="eyebrow">Dispute</p><h2>ข้อพิพาทสินค้า</h2></div><span class="admin-badge">{{ $disputes->count() }} รอตรวจสอบ</span></div>@forelse($disputes as $dispute)<div class="admin-row admin-row-stack"><div><b>{{ $dispute->orderItem->product->name }}</b><p>{{ $dispute->reason }}</p></div><form class="flex gap-2" method="POST" action="{{ route('admin.disputes.update', $dispute) }}">@csrf @method('PATCH')<button name="status" value="reviewing" class="admin-action">ตรวจสอบ</button><button name="status" value="resolved_refund" class="admin-action admin-action-ok">คืนเงิน</button></form></div>@empty<p class="admin-empty">ไม่มีข้อพิพาทค้าง</p>@endforelse</article>
         </section>
     </div>
+    <!-- dashboard statistics  -->
+    
 </x-app-layout>

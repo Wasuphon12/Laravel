@@ -12,11 +12,11 @@ class Product extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'category', 'price', 'condition_grade', 'serial_number', 'specs', 'description', 'status'];
+    protected $fillable = ['name', 'category', 'price', 'stock_quantity', 'specs', 'description', 'status'];
 
     protected function casts(): array
     {
-        return ['price' => 'decimal:2', 'specs' => 'array'];
+        return ['price' => 'decimal:2', 'stock_quantity' => 'integer', 'specs' => 'array'];
     }
 
     public function dealer(): BelongsTo

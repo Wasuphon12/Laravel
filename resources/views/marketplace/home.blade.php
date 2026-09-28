@@ -99,9 +99,10 @@
                         <div class="product-art"><span>{{ $filterOptions['category'][$product->category] ?? $product->category }}</span></div>
                     @endif
                     <div class="p-5">
-                        <div class="flex items-center justify-between gap-2"><span class="rounded-full bg-[#B2B0E8]/35 px-2.5 py-1 text-xs font-bold text-[#1A2A80]">{{ $filterOptions['category'][$product->category] ?? $product->category }}</span><span class="text-xs text-slate-400">เกรด {{ $product->condition_grade }}</span></div>
+                        <div class="flex items-center justify-between gap-2"><span class="rounded-full bg-[#B2B0E8]/35 px-2.5 py-1 text-xs font-bold text-[#1A2A80]">{{ $filterOptions['category'][$product->category] ?? $product->category }}</span></div>
                         <h2 class="mt-3 line-clamp-2 min-h-12 font-bold leading-6 text-slate-900">{{ $product->name }}</h2>
                         <p class="mt-3 text-xl font-bold text-slate-900">฿{{ number_format($product->price, 2) }}</p>
+                        <p class="mt-2 text-sm font-semibold text-emerald-700">เหลือ {{ number_format($product->stock_quantity) }} ชิ้น</p>
                         <p class="mt-3 truncate text-sm text-slate-500">{{ $product->dealer->dealerProfile?->store_name }}</p>
                         @if($product->dealer->dealerProfile?->reviews_count)
                             <p class="mt-1 text-xs font-semibold text-amber-700">★ {{ number_format((float) $product->dealer->dealerProfile->reviews_avg_rating, 1) }} <span class="font-normal text-slate-500">({{ $product->dealer->dealerProfile->reviews_count }} รีวิว)</span></p>

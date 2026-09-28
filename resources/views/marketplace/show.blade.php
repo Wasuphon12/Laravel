@@ -17,7 +17,7 @@
             <section class="card p-6"><h2 class="text-lg font-bold text-slate-900">รายละเอียดสินค้า</h2><p class="mt-3 whitespace-pre-line leading-7 text-slate-600">{{ $product->description }}</p></section>
         </div>
         <aside class="card h-fit p-6 lg:sticky lg:top-6">
-            <div class="flex items-center justify-between"><span class="rounded-full bg-indigo-50 px-3 py-1 text-sm font-bold text-indigo-700">สภาพเกรด {{ $product->condition_grade }}</span><span class="text-sm text-emerald-700">● พร้อมจำหน่าย</span></div>
+            <div class="flex items-center justify-between gap-3"><span class="text-sm text-emerald-700">● พร้อมจำหน่าย</span><span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-700">เหลือ {{ number_format($product->stock_quantity) }} ชิ้น</span></div>
             <h1 class="mt-4 text-2xl font-bold leading-8 text-slate-900">{{ $product->name }}</h1><p class="mt-4 text-3xl font-bold tracking-tight text-slate-900">฿{{ number_format($product->price, 2) }}</p><p class="mt-2 text-sm text-slate-500">ลงขายเมื่อ {{ $product->created_at->format('d/m/Y H:i') }}</p>
             <div class="my-6 border-t border-slate-100"></div><h2 class="font-bold text-slate-900">สเปกเครื่อง</h2>
             <dl class="mt-3 grid grid-cols-2 gap-2 text-sm">@foreach($product->specs as $key => $value)<div class="rounded-xl bg-slate-50 p-3"><dt class="text-xs font-medium uppercase text-slate-500">{{ $key }}</dt><dd class="mt-1 font-semibold text-slate-800">{{ $value }}</dd></div>@endforeach</dl>

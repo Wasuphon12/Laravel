@@ -15,6 +15,7 @@ class CartController extends Controller
         $products = Product::query()
             ->whereIn('id', $ids)
             ->where('status', 'available')
+            ->where('stock_quantity', '>', 0)
             ->with(['images', 'dealer.dealerProfile'])
             ->get()
             ->sortBy(fn (Product $product) => array_search($product->id, $ids, true))
@@ -28,7 +29,7 @@ class CartController extends Controller
 
     public function add(Request $request, Product $product): RedirectResponse
     {
-        abort_unless($product->status === 'available', 422, 'สินค้านี้ไม่พร้อมจำหน่ายแล้ว');
+        abort_unless($product->status === 'available' && $product->stock_quantity > 0, 422, 'สินค้านี้ไม่พร้อมจำหน่ายแล้ว');
 
         $ids = $this->productIds($request);
         if (! in_array($product->id, $ids, true)) {

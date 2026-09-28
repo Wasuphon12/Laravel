@@ -15,7 +15,7 @@
                             <div class="cart-item-image">
                                 @if($product->images->first())<img src="{{ $product->images->first()->image_url }}" alt="{{ $product->name }}">@else<span>PC</span>@endif
                             </div>
-                            <div class="min-w-0 flex-1"><p class="text-xs font-bold text-red-300">{{ $product->dealer->dealerProfile?->store_name }}</p><a href="{{ route('products.show', $product) }}" class="mt-1 block font-bold text-slate-900 hover:text-red-300">{{ $product->name }}</a><p class="mt-1 text-sm text-slate-500">สภาพเกรด {{ $product->condition_grade }} · พร้อมจำหน่าย</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-xs font-bold text-red-300">{{ $product->dealer->dealerProfile?->store_name }}</p><a href="{{ route('products.show', $product) }}" class="mt-1 block font-bold text-slate-900 hover:text-red-300">{{ $product->name }}</a><p class="mt-1 text-sm text-slate-500">พร้อมจำหน่าย</p></div>
                             <div class="flex flex-col items-end gap-3"><p class="text-lg font-bold text-slate-900">฿{{ number_format($product->price, 2) }}</p><form method="POST" action="{{ route('cart.remove', $product) }}">@csrf @method('DELETE')<button class="text-xs font-bold text-slate-400 hover:text-red-300">นำออก</button></form></div>
                         </article>
                     @endforeach

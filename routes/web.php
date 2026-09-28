@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/products', [MarketplaceController::class, 'dealerProducts'])->name('products');
         Route::get('/products/create', [MarketplaceController::class, 'createProduct'])->name('products.create');
         Route::post('/products', [MarketplaceController::class, 'storeProduct'])->name('products.store');
+        Route::get('/products/{product}/duplicate', [MarketplaceController::class, 'duplicateProduct'])->name('products.duplicate');
         Route::get('/products/{product}/edit', [MarketplaceController::class, 'editProduct'])->name('products.edit');
         Route::put('/products/{product}', [MarketplaceController::class, 'updateProduct'])->name('products.update');
         Route::get('/orders/{order}', [CheckoutController::class, 'dealerOrder'])->name('orders.show');

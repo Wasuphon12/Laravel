@@ -20,7 +20,7 @@ class AdminController extends Controller
             'disputes' => Dispute::query()->whereIn('status', ['open', 'reviewing'])->with('orderItem.product', 'customer', 'dealer')->latest()->get(),
             'stats' => [
                 'users' => User::query()->count(),
-                'products' => Product::query()->where('status', 'available')->count(),
+                'products' => Product::query()->where('status', 'available')->where('stock_quantity', '>', 0)->count(),
                 'orders' => Order::query()->count(),
                 'sales' => Order::query()->where('payment_status', 'paid')->sum('total_amount'),
             ],

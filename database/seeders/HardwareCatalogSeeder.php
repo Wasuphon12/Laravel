@@ -29,11 +29,10 @@ class HardwareCatalogSeeder extends Seeder
         ];
 
         foreach ($items as $index => [$category, $name, $price, $specs]) {
-            $serial = sprintf('DEMO-HARDWARE-%03d', $index + 1);
             $product = $dealer->products()->updateOrCreate(
-                ['serial_number' => $serial],
+                ['name' => $name],
                 [
-                    'name' => $name, 'category' => $category, 'price' => $price, 'condition_grade' => 'A',
+                    'name' => $name, 'category' => $category, 'price' => $price,
                     'specs' => $specs, 'description' => 'อุปกรณ์คอมพิวเตอร์มือสอง ผ่านการตรวจสอบการใช้งานแล้ว รับประกันร้าน 30 วัน',
                     'status' => 'available',
                 ],

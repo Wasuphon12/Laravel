@@ -44,6 +44,7 @@ class ProfileController extends Controller
     {
         return view('profile.address', [
             'user' => $request->user(),
+            'isOnboarding' => $request->session()->get('onboarding_address', false),
         ]);
     }
 
@@ -62,10 +63,13 @@ class ProfileController extends Controller
         $request->user()->update($data);
 
         $intendedCheckout = $request->session()->pull('intended_checkout');
+        $isOnboarding = $request->session()->pull('onboarding_address', false);
 
         return $intendedCheckout
             ? Redirect::to($intendedCheckout)->with('success', 'บันทึกที่อยู่จัดส่งแล้ว')
-            : Redirect::route('address.edit')->with('status', 'address-updated');
+            : ($isOnboarding
+                ? Redirect::route('home')->with('success', 'บันทึกที่อยู่จัดส่งแล้ว เริ่มเลือกสินค้าได้เลย')
+                : Redirect::route('address.edit')->with('status', 'address-updated'));
     }
 
     /**

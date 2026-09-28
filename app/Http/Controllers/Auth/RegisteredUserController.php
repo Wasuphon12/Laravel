@@ -48,6 +48,12 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('home', absolute: false));
+        if ($user->role === 'customer') {
+            $request->session()->put('onboarding_address', true);
+
+            return redirect()->route('address.edit')->with('info', 'กรุณาเพิ่มที่อยู่จัดส่งก่อนเริ่มเลือกซื้อสินค้า');
+        }
+
+        return redirect()->route('dealer.kyc')->with('info', 'กรุณายื่นข้อมูลยืนยันตัวตนร้านค้าก่อนเริ่มลงสินค้า');
     }
 }

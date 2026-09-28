@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="page-shell">
-            <p class="eyebrow">ข้อมูลสำหรับจัดส่ง</p>
-            <h1 class="mt-1 text-2xl font-bold text-slate-900">ที่อยู่</h1>
+            <p class="eyebrow">{{ $isOnboarding ? 'เริ่มต้นใช้งาน' : 'ข้อมูลสำหรับจัดส่ง' }}</p>
+            <h1 class="mt-1 text-2xl font-bold text-slate-900">{{ $isOnboarding ? 'เพิ่มที่อยู่จัดส่ง' : 'ที่อยู่' }}</h1>
         </div>
     </x-slot>
 
@@ -10,8 +10,8 @@
         <section class="profile-panel mx-auto max-w-2xl p-5 sm:p-8">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-100">ที่อยู่จัดส่งเริ่มต้น</h2>
-                    <p class="mt-1 text-sm leading-6 text-slate-400">ระบบจะใช้ข้อมูลนี้กับคำสั่งซื้อใหม่โดยอัตโนมัติ กรุณาตรวจสอบให้ถูกต้องก่อนสั่งซื้อ</p>
+                    <h2 class="text-xl font-bold text-slate-100">{{ $isOnboarding ? 'เพิ่มที่อยู่ก่อนเลือกซื้อสินค้า' : 'ที่อยู่จัดส่งเริ่มต้น' }}</h2>
+                    <p class="mt-1 text-sm leading-6 text-slate-400">{{ $isOnboarding ? 'กรอกข้อมูลครั้งเดียว ระบบจะใช้กับคำสั่งซื้อใหม่โดยอัตโนมัติ' : 'ระบบจะใช้ข้อมูลนี้กับคำสั่งซื้อใหม่โดยอัตโนมัติ กรุณาตรวจสอบให้ถูกต้องก่อนสั่งซื้อ' }}</p>
                 </div>
                 <span class="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-300">ใช้กับคำสั่งซื้อใหม่</span>
             </div>
@@ -54,8 +54,10 @@
                 </div>
 
                 <div class="flex flex-wrap gap-3 pt-2">
-                    <button type="submit" class="btn-primary">บันทึกที่อยู่</button>
-                    <a href="{{ route('home') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-600 px-4 text-sm font-semibold text-slate-200 transition hover:border-gray-500 hover:bg-gray-800">กลับหน้าแรก</a>
+                    <button type="submit" class="btn-primary">{{ $isOnboarding ? 'บันทึกและเริ่มเลือกสินค้า' : 'บันทึกที่อยู่' }}</button>
+                    @unless ($isOnboarding)
+                        <a href="{{ route('home') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-gray-600 px-4 text-sm font-semibold text-slate-200 transition hover:border-gray-500 hover:bg-gray-800">กลับหน้าแรก</a>
+                    @endunless
                 </div>
             </form>
         </section>

@@ -24,11 +24,11 @@ class MarketplaceSeeder extends Seeder
         );
 
         $products = [
-            ['name' => 'Lenovo ThinkPad T480', 'price' => 12500, 'condition_grade' => 'A', 'serial_number' => 'DEMO-T480-001', 'specs' => ['cpu' => 'Intel Core i5-8350U', 'ram' => '16GB DDR4', 'storage' => '512GB SSD', 'display' => '14-inch FHD'], 'description' => 'โน้ตบุ๊กทำงานยอดนิยม สภาพสวย แบตเตอรี่ใช้งานได้ดี พร้อมอะแดปเตอร์แท้', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=Lenovo+ThinkPad+T480'],
-            ['name' => 'Dell OptiPlex 7080 SFF', 'price' => 10900, 'condition_grade' => 'A', 'serial_number' => 'DEMO-OPT-002', 'specs' => ['cpu' => 'Intel Core i5-10500', 'ram' => '16GB DDR4', 'storage' => '256GB NVMe SSD', 'form_factor' => 'Small Form Factor'], 'description' => 'Desktop ขนาดกะทัดรัด เหมาะสำหรับสำนักงานและทำงานทั่วไป ผ่านการทดสอบครบทุกพอร์ต', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=Dell+OptiPlex+7080'],
-            ['name' => 'ASUS ROG Strix G15 Gaming', 'price' => 22900, 'condition_grade' => 'B', 'serial_number' => 'DEMO-ROG-003', 'specs' => ['cpu' => 'AMD Ryzen 7 4800H', 'ram' => '16GB DDR4', 'gpu' => 'NVIDIA RTX 3060', 'storage' => '1TB SSD'], 'description' => 'เกมมิ่งโน้ตบุ๊กแรงสำหรับเล่นเกมและตัดต่อ มีรอยใช้งานเล็กน้อยบริเวณฝาหลัง', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=ASUS+ROG+Strix+G15'],
-            ['name' => 'Apple MacBook Air M1', 'price' => 18900, 'condition_grade' => 'A', 'serial_number' => 'DEMO-MBA-004', 'specs' => ['chip' => 'Apple M1', 'memory' => '8GB Unified Memory', 'storage' => '256GB SSD', 'display' => '13.3-inch Retina'], 'description' => 'MacBook Air M1 เครื่องไทย ใช้งานน้อย สี Space Gray พร้อมสายชาร์จ USB-C', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=MacBook+Air+M1'],
-            ['name' => 'HP EliteDesk 800 G6 Mini', 'price' => 13900, 'condition_grade' => 'B', 'serial_number' => 'DEMO-HP-005', 'specs' => ['cpu' => 'Intel Core i7-10700T', 'ram' => '16GB DDR4', 'storage' => '512GB NVMe SSD', 'form_factor' => 'Mini PC'], 'description' => 'Mini PC ประหยัดพื้นที่ ประสิทธิภาพสูง เหมาะทำงานหลายจอ มีรอยใช้งานตามอายุเล็กน้อย', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=HP+EliteDesk+800+G6'],
+            ['name' => 'Lenovo ThinkPad T480', 'price' => 12500, 'specs' => ['cpu' => 'Intel Core i5-8350U', 'ram' => '16GB DDR4', 'storage' => '512GB SSD', 'display' => '14-inch FHD'], 'description' => 'โน้ตบุ๊กทำงานยอดนิยม สภาพสวย แบตเตอรี่ใช้งานได้ดี พร้อมอะแดปเตอร์แท้', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=Lenovo+ThinkPad+T480'],
+            ['name' => 'Dell OptiPlex 7080 SFF', 'price' => 10900, 'specs' => ['cpu' => 'Intel Core i5-10500', 'ram' => '16GB DDR4', 'storage' => '256GB NVMe SSD', 'form_factor' => 'Small Form Factor'], 'description' => 'Desktop ขนาดกะทัดรัด เหมาะสำหรับสำนักงานและทำงานทั่วไป ผ่านการทดสอบครบทุกพอร์ต', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=Dell+OptiPlex+7080'],
+            ['name' => 'ASUS ROG Strix G15 Gaming', 'price' => 22900, 'specs' => ['cpu' => 'AMD Ryzen 7 4800H', 'ram' => '16GB DDR4', 'gpu' => 'NVIDIA RTX 3060', 'storage' => '1TB SSD'], 'description' => 'เกมมิ่งโน้ตบุ๊กแรงสำหรับเล่นเกมและตัดต่อ มีรอยใช้งานเล็กน้อยบริเวณฝาหลัง', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=ASUS+ROG+Strix+G15'],
+            ['name' => 'Apple MacBook Air M1', 'price' => 18900, 'specs' => ['chip' => 'Apple M1', 'memory' => '8GB Unified Memory', 'storage' => '256GB SSD', 'display' => '13.3-inch Retina'], 'description' => 'MacBook Air M1 เครื่องไทย ใช้งานน้อย สี Space Gray พร้อมสายชาร์จ USB-C', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=MacBook+Air+M1'],
+            ['name' => 'HP EliteDesk 800 G6 Mini', 'price' => 13900, 'specs' => ['cpu' => 'Intel Core i7-10700T', 'ram' => '16GB DDR4', 'storage' => '512GB NVMe SSD', 'form_factor' => 'Mini PC'], 'description' => 'Mini PC ประหยัดพื้นที่ ประสิทธิภาพสูง เหมาะทำงานหลายจอ มีรอยใช้งานตามอายุเล็กน้อย', 'image' => 'https://placehold.co/800x500/7f1d1d/f9fafb?text=HP+EliteDesk+800+G6'],
         ];
 
         $catalog = [
@@ -49,8 +49,6 @@ class MarketplaceSeeder extends Seeder
             $products[] = [
                 'name' => sprintf('%s (%02d)', $model, $number),
                 'price' => $basePrice + (($number % 4) * 500),
-                'condition_grade' => ['A', 'B', 'C'][$number % 3],
-                'serial_number' => sprintf('DEMO-BATCH-%03d', $number),
                 'specs' => ['cpu' => $cpu, 'ram' => $number % 2 === 0 ? '16GB DDR4' : '8GB DDR4', 'storage' => $number % 3 === 0 ? '512GB NVMe SSD' : '256GB NVMe SSD', 'warranty' => 'รับประกันร้าน 30 วัน'],
                 'description' => sprintf('คอมพิวเตอร์มือสองผ่านการตรวจสอบการทำงานแล้ว รายการสาธิตลำดับที่ %d พร้อมอะแดปเตอร์และรับประกันร้าน 30 วัน', $number),
                 'image' => sprintf('https://placehold.co/800x500/7f1d1d/f9fafb?text=%s', urlencode($model)),
@@ -59,7 +57,7 @@ class MarketplaceSeeder extends Seeder
 
         foreach ($products as $item) {
             $product = $dealer->products()->updateOrCreate(
-                ['serial_number' => $item['serial_number']],
+                ['name' => $item['name']],
                 collect($item)->except('image')->all() + ['status' => 'available'],
             );
             ProductImage::updateOrCreate(['product_id' => $product->id, 'is_primary' => true], ['image_url' => $item['image']]);

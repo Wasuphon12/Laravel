@@ -26,6 +26,21 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('home', absolute: false));
+        $response->assertRedirect(route('address.edit', absolute: false));
+        $response->assertSessionHas('onboarding_address', true);
+    }
+
+    public function test_new_dealers_are_redirected_to_kyc_after_registration(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test Dealer',
+            'email' => 'dealer@example.com',
+            'role' => 'dealer',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dealer.kyc', absolute: false));
     }
 }

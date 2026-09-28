@@ -56,10 +56,9 @@ class DiversifyMarketplaceSeeder extends Seeder
             );
 
             foreach ($catalog as $productIndex => [$category, $name, $price, $specs]) {
-                $serial = sprintf('SHOP-%02d-%03d', $shopIndex + 1, $productIndex + 1);
                 $product = $dealer->products()->updateOrCreate(
-                    ['serial_number' => $serial],
-                    ['name' => $name, 'category' => $category, 'price' => $price + ($shopIndex * 150), 'condition_grade' => ['A', 'A', 'B'][$productIndex % 3], 'specs' => $specs, 'description' => "สินค้า {$name} มือสองผ่านการทดสอบโดย {$shop['store']} พร้อมรับประกันร้าน 30 วัน", 'status' => 'available'],
+                    ['name' => $name],
+                    ['name' => $name, 'category' => $category, 'price' => $price + ($shopIndex * 150), 'specs' => $specs, 'description' => "สินค้า {$name} มือสองผ่านการทดสอบโดย {$shop['store']} พร้อมรับประกันร้าน 30 วัน", 'status' => 'available'],
                 );
                 ProductImage::updateOrCreate(
                     ['product_id' => $product->id, 'is_primary' => true],

@@ -18,7 +18,7 @@ class CheckoutController extends Controller
     public function create(Request $request): View|RedirectResponse
     {
         $ids = array_filter(explode(',', (string) $request->query('products')));
-        $products = Product::query()->whereIn('id', $ids)->where('status', 'available')->with('dealer.dealerProfile')->get();
+        $products = Product::query()->whereIn('id', $ids)->where('status', 'available')->where('stock_quantity', '>', 0)->with('dealer.dealerProfile')->get();
         abort_if($products->isEmpty(), 404, 'ไม่พบสินค้าที่พร้อมจำหน่าย');
 
         if (! $this->savedShippingAddress($request)) {
@@ -57,7 +57,7 @@ class CheckoutController extends Controller
 
         $orders = DB::transaction(function () use ($request, $data, $demoGateway, $shippingAddress) {
             $products = Product::query()->whereIn('id', $data['product_ids'])->with('dealer.dealerProfile')->lockForUpdate()->get();
-            if ($products->count() !== count($data['product_ids']) || $products->contains(fn (Product $product) => $product->status !== 'available')) {
+            if ($products->count() !== count($data['product_ids']) || $products->contains(fn (Product $product) => $product->status !== 'available' || $product->stock_quantity < 1)) {
                 throw ValidationException::withMessages(['product_ids' => 'มีสินค้าบางรายการถูกจองหรือจำหน่ายไปแล้ว']);
             }
             $productsByDealer = $products->groupBy('dealer_id');
@@ -72,7 +72,11 @@ class CheckoutController extends Controller
                     $order->items()->create([
                         'product_id' => $product->id, 'dealer_id' => $product->dealer_id, 'price' => $product->price,
                     ]);
-                    $product->update(['status' => 'reserved']);
+                    $remainingStock = $product->stock_quantity - 1;
+                    $product->update([
+                        'stock_quantity' => $remainingStock,
+                        'status' => $remainingStock === 0 ? 'reserved' : 'available',
+                    ]);
                 }
 
                 return $order;
@@ -133,6 +137,7 @@ class CheckoutController extends Controller
                 'payment_verified_at' => now(),
                 'payment_verified_by' => null,
             ]);
+            $this->markOrderProductsAsSold($order);
         });
 
         return back()->with('success', 'Demo Gateway ส่ง webhook สำเร็จ ระบบยืนยันสถานะชำระเงินแล้ว');
@@ -171,7 +176,10 @@ class CheckoutController extends Controller
                 'ไม่สามารถยกเลิกคำสั่งซื้อที่ส่งสลิปหรือยืนยันการชำระเงินแล้ว',
             );
 
-            $order->items->each(fn ($item) => $item->product->update(['status' => 'available']));
+            $order->items->each(function ($item): void {
+                $item->product->increment('stock_quantity');
+                $item->product->update(['status' => 'available']);
+            });
             $order->delete();
         });
 
@@ -189,6 +197,7 @@ class CheckoutController extends Controller
             'payment_verified_at' => now(),
             'payment_verified_by' => $request->user()->id,
         ]);
+        $this->markOrderProductsAsSold($order);
 
         return back()->with('success', 'ยืนยันสลิปแล้ว รายการพร้อมสำหรับการจัดส่ง');
     }
@@ -221,5 +230,13 @@ class CheckoutController extends Controller
         ];
 
         return collect($address)->contains(fn ($value) => blank($value)) ? null : $address;
+    }
+
+    private function markOrderProductsAsSold(Order $order): void
+    {
+        Product::query()
+            ->whereIn('id', $order->items()->pluck('product_id'))
+            ->where('status', 'reserved')
+            ->update(['status' => 'sold']);
     }
 }

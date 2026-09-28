@@ -51,7 +51,7 @@ class MarketplaceController extends Controller
             'storage' => collect(['SSD', 'HDD']),
         ];
 
-        $products = Product::query()->where('status', 'available')->with([
+        $products = Product::query()->where('status', 'available')->where('stock_quantity', '>', 0)->with([
             'dealer.dealerProfile' => fn ($query) => $query->withAvg('reviews', 'rating')->withCount('reviews'),
             'images',
         ])
@@ -106,7 +106,8 @@ class MarketplaceController extends Controller
 
     public function show(Product $product): View
     {
-        abort_unless($product->status === 'available' || auth()->id() === $product->dealer_id || auth()->user()?->isAdmin(), 404);
+        $isAvailable = $product->status === 'available' && $product->stock_quantity > 0;
+        abort_unless($isAvailable || auth()->id() === $product->dealer_id || auth()->user()?->isAdmin(), 404);
 
         return view('marketplace.show', ['product' => $product->load([
             'dealer.dealerProfile' => fn ($query) => $query->withAvg('reviews', 'rating')->withCount('reviews'),
@@ -119,9 +120,7 @@ class MarketplaceController extends Controller
         $search = trim((string) $request->query('search'));
         $products = $request->user()->products()
             ->with('images')
-            ->when($search, fn ($query) => $query->where(fn ($searchQuery) => $searchQuery
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('serial_number', 'like', "%{$search}%")))
+            ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->latest()
             ->get();
 
@@ -130,7 +129,7 @@ class MarketplaceController extends Controller
 
     public function createProduct(): View
     {
-        return view('dealer.product-form', ['product' => new Product]);
+        return view('dealer.product-form', ['product' => new Product, 'copiedImages' => collect()]);
     }
 
     public function storeProduct(Request $request): RedirectResponse
@@ -139,34 +138,60 @@ class MarketplaceController extends Controller
         abort_unless($profile?->status === 'approved', 403, 'บัญชีร้านค้าต้องผ่าน KYC ก่อนลงสินค้า');
         $data = $this->validateProduct($request);
         $data['specs'] = array_filter($data['specs'] ?? [], fn ($value) => filled($value));
-        $payload = Arr::except($data, ['images', 'image_files']);
-        $product = $request->user()->products()
-            ->where('serial_number', $data['serial_number'])
-            ->whereDoesntHave('orderItem')
-            ->first();
-        if ($product) {
-            $product->update($payload);
-        } else {
-            $product = $request->user()->products()->create($payload);
-        }
+        $payload = Arr::except($data, ['copied_image_ids', 'image_files']);
+        $product = $request->user()->products()->create($payload);
         $this->saveImages($request, $product);
 
         return redirect()->route('home')->with('success', 'เพิ่มสินค้าเรียบร้อยแล้ว สินค้าของคุณแสดงอยู่หน้าแรก');
     }
 
-    public function editProduct(Product $product): View
+    public function editProduct(Product $product): View|RedirectResponse
     {
         abort_unless($product->dealer_id === request()->user()->id, 403);
 
-        return view('dealer.product-form', compact('product'));
+        if ($this->isLockedProduct($product)) {
+            return redirect()->route('dealer.products')->with('error', 'สินค้านี้ถูกจองหรือจำหน่ายแล้ว ไม่สามารถแก้ไขหรือเปิดขายซ้ำได้ กรุณาสร้างรายการใหม่');
+        }
+
+        return view('dealer.product-form', ['product' => $product, 'copiedImages' => collect()]);
+    }
+
+    public function duplicateProduct(Product $product): View|RedirectResponse
+    {
+        abort_unless($product->dealer_id === request()->user()->id, 403);
+
+        if ($product->status !== 'sold') {
+            return redirect()->route('dealer.products')->with('error', 'สร้างรายการใหม่จากสินค้าเดิมได้เฉพาะรายการที่ขายแล้ว');
+        }
+
+        $newProduct = new Product([
+            'name' => $product->name,
+            'category' => $product->category,
+            'price' => $product->price,
+            'stock_quantity' => 1,
+            'specs' => $product->specs,
+            'description' => $product->description,
+            'status' => 'available',
+        ]);
+
+        return view('dealer.product-form', [
+            'product' => $newProduct,
+            'sourceProduct' => $product,
+            'copiedImages' => $product->images()->orderByDesc('is_primary')->get(['id', 'image_url']),
+        ]);
     }
 
     public function updateProduct(Request $request, Product $product): RedirectResponse
     {
         abort_unless($product->dealer_id === $request->user()->id, 403);
+
+        if ($this->isLockedProduct($product)) {
+            return redirect()->route('dealer.products')->with('error', 'สินค้านี้ถูกจองหรือจำหน่ายแล้ว ไม่สามารถแก้ไขหรือเปิดขายซ้ำได้ กรุณาสร้างรายการใหม่');
+        }
+
         $data = $this->validateProduct($request);
         $data['specs'] = array_filter($data['specs'] ?? [], fn ($value) => filled($value));
-        $product->update(Arr::except($data, ['images', 'image_files']));
+        $product->update(Arr::except($data, ['copied_image_ids', 'image_files']));
         $this->saveImages($request, $product);
 
         return redirect()->route('home')->with('success', 'บันทึกการแก้ไขแล้ว');
@@ -223,16 +248,30 @@ class MarketplaceController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'], 'category' => ['required', 'in:desktop,laptop,cpu,gpu,ram,storage,motherboard,psu,case,monitor,accessory'], 'price' => ['required', 'decimal:0,2', 'min:1'],
-            'condition_grade' => ['required', 'in:A,B,C'], 'serial_number' => ['required', 'string', 'max:255'],
+            'stock_quantity' => ['required', 'integer', 'min:0', 'max:9999'],
             'specs' => ['nullable', 'array'], 'description' => ['required', 'string'], 'status' => ['required', 'in:available,hidden'],
-            'images' => ['nullable', 'array', 'max:8'], 'images.*' => ['nullable', 'url', 'max:2048'],
+            'copied_image_ids' => ['nullable', 'array', 'max:8'], 'copied_image_ids.*' => ['integer'],
             'image_files' => ['nullable', 'array', 'max:8'], 'image_files.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
     }
 
+    private function isLockedProduct(Product $product): bool
+    {
+        return in_array($product->status, ['reserved', 'sold'], true);
+    }
+
     private function saveImages(Request $request, Product $product): void
     {
-        foreach (array_values(array_filter($request->input('images', []))) as $index => $url) {
+        $imageUrls = ProductImage::query()
+            ->whereIn('id', $request->input('copied_image_ids', []))
+            ->whereHas('product', fn ($query) => $query->where('dealer_id', $request->user()->id))
+            ->pluck('image_url')
+            ->filter(fn (string $url) => str_starts_with($url, '/storage/'))
+            ->unique()
+            ->values()
+            ->all();
+
+        foreach (array_slice($imageUrls, 0, 8) as $index => $url) {
             ProductImage::create(['product_id' => $product->id, 'image_url' => $url, 'is_primary' => $index === 0 && ! $product->images()->where('is_primary', true)->exists()]);
         }
 

@@ -11,6 +11,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/', [MarketplaceController::class, 'home'])->name('home');
 Route::get('/products/{product}', [MarketplaceController::class, 'show'])->name('products.show');
 
@@ -59,5 +60,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php':
+require __DIR__.'/auth.php';
 
